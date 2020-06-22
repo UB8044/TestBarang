@@ -1,25 +1,28 @@
 package com.example.testbarang;
 
 import androidx.appcompat.app.AppCompatActivity;
-
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.app.Activity;
-import android.content.Context;
+import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.LinearLayoutManager;
-
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.util.ArrayList;
 
+
 public class LihatBarang extends AppCompatActivity {
+    /*
+     * Mendefinisikan variable yang akan dipakai
+     */
     private DatabaseReference database;
     private RecyclerView rvView;
     private RecyclerView.Adapter adapter;
@@ -40,24 +43,36 @@ public class LihatBarang extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 daftarBarang = new ArrayList<>();
-                for (DataSnapshot noteDataSnapshot : dataSnapshot.getChildren()){
+                for (DataSnapshot noteDataSnapshot : dataSnapshot.getChildren()) {
                     Barang barang = noteDataSnapshot.getValue(Barang.class);
                     barang.setKode(noteDataSnapshot.getKey());
                     daftarBarang.add(barang);
                 }
 
-                adapter = new AdapterLihatBarang(daftarBarang, LihatBarang.this);
+                adapter = new AdapterLihatBarang(daftarBarang,LihatBarang.this);
                 rvView.setAdapter(adapter);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                System.out.println(databaseError.getDetails()+""+databaseError.getMessage());
+                System.out.println(databaseError.getDetails()+" "+databaseError.getMessage());
             }
         });
     }
 
     public static Intent getActIntent(Activity activity){
         return new Intent(activity, LihatBarang.class);
+    }
+
+    public void onDeleteData(Barang barang, int position) {
+        if (database != null){
+            database.child("Barang").child(barang.getKode()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Toast.makeText(LihatBarang.this, "Data berhasil dihapus", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+
     }
 }
